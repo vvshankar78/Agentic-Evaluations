@@ -14,7 +14,7 @@ Finally, evaluation results are stored and visualized both in AI Foundry's evalu
 
 Agentic-Eval-Pipeline is a Python-based framework for building and evaluating agentic systems.
 
-### Evaluation Pipeline Diagram
+### Evaluation Pipeline
 
 Below is a visual representation of the evaluation pipeline:
 
