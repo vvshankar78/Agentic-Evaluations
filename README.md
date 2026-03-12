@@ -1,148 +1,328 @@
-# Evaluation of Agentic Systems using Azure AI Foundry
+# Evaluation Framework using Azure AI Foundry
 
-Agents are AI models with memories that communicate via messages. They can interact with themselves, other agents, or the human user, these messages include text, multimodalities, and tools or function calls, forming a chat history/thread/trajectory.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![Azure](https://img.shields.io/badge/Azure-AI%20Foundry-blue.svg)](https://azure.microsoft.com/en-us/products/ai-foundry)
 
-Agentic systems can range from single agents with tool calling to complex multi-agent systems that communicate to complete tasks. Building an evaluation pipeline for such systems starts with creating ground truth datasets based on real-world usage. 
+A config-driven evaluation framework for **agentic systems** and **GenAI applications** built on Azure AI Foundry SDK. Get started in minutes with YAML-based experiment configuration.
 
-This framework provides a step-by-step approch to building a pipeline to Evaluate agentic system using Azure AI Foundry, using single agent with multiple plugins from Sematic Kernel as an example. This repository provides a reporting framework using html report locally to analyze, visualize and share the evaluation results to various stake holders. 
+Whether you're evaluating RAG applications, multi-agent systems, or custom GenAI workflows, this framework reduces boilerplate and accelerates iteration.
 
-## 1. Agentic Evaluation Pipeline (Inner Loop)
-Inputs are fed to agentic systems, and outputs—either end responses or inner workings like function calls, agent selection, and communication—are evaluated.
-Extracting these inner details is crucial for robust evaluation. Evaluators compare predicted data to ground truth data, scoring them accordingly. 
-Currently, specialized evaluators for agentic systems need to be custom-built, as existing AI foundry tools support RAG and chatbot applications only. 
-Finally, evaluation results are stored and visualized both in AI Foundry's evaluator dashboard and a custom HTML Report built using Jinja2 template. 
+## Key Features
 
-Agentic-Eval-Pipeline is a Python-based framework for building and evaluating agentic systems.
+- **🚀 Quick Setup** — Config-driven YAML files; swap datasets, models, or metrics instantly
+- **🔌 Plug-and-Play** — Modular architecture for custom data loaders, evaluators, and pipeline stages
+- **📊 AI Foundry Evaluators** — Built-in RAG metrics (Relevance, Coherence, Groundedness) and Agentic metrics (Task Adherence, Tool Call Accuracy)
+- **🎯 Custom Evaluators** — Create domain-specific metrics with simple Python classes
+- **⚖️ LLM-as-Judge** — Build custom AI judges using prompty templates for flexible scoring
+- **🔗 Experimentation Pipelines** — Combine data loading, inference, and evaluation in configurable YAML pipelines
 
-### Evaluation Pipeline
-
-Below is a visual representation of the evaluation pipeline:
-
-![Evaluation Pipeline](assets/Eval-pipeline.png)
-
-
-## 2. Folder Structure
-
-The repository is organized as follows:
-
-```
-project-root/
-│
-├── src/                # Source code for the framework
-│   ├── __init__.py     # Makes src a package
-│   ├── main.py     # Core pipeline logic
-│   ├── data_generator/ # Code for generating data
-│   ├── data_transforms/ # Code for transforming data
-│   ├── evaluator/      # Code for evaluation logic
-│   ├── datasets/       # Code for dataset management
-│   └── report_generator/ # Code for generating reports
-│
-├── config/             # Configuration files
-│   └── config.yaml     # YAML configuration file
-│   └── mapping_schema.json  # Schema for mapping agent output to ground truth function call
-│
-├── assets/             # Assets like images or diagrams
-│   └── Eval-pipeline.png # Diagram of the evaluation pipeline
-│   ├── Report-screenshots1.png # Overview of evaluation metrics
-│   ├── Reports-screenshot2.png # Agent communication visualization
-│   └── Reports-screenshot3.png # Function call analysis
-│
-├── requirements.txt    # Python dependencies
-├── .gitignore          # Git ignore rules
-└── README.md           # Project documentation
+```mermaid
+flowchart LR
+    A[📄 Dataset] --> B[🤖 Inference]
+    B --> C[⚙️ Evaluation]
+    C --> D[📊 Results]
 ```
 
-## 3. Prerequisites
-Before getting started, ensure you have the following:
+## About This Framework
 
-- Azure Subscription: Access to an Azure subscription with the necessary permissions.
-- Azure CLI: Installed and configured on your local machine.
-- Azure AI Foundry - Hub and Project created with model (GPT4o) deployed and Blob storage link set up. Refer [Azure AI Foundry Documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-ai-foundry#work-in-an-azure-ai-foundry-project).
-- Python 3.11 or above
-- Git: For version control and cloning the repository.
+This framework provides two core capabilities for rapid AI evaluation:
 
-## 5. Azure Features Used
- - Azure AI Foundry - GPT4o, Evaluation, tracing
- - App Insights - logging and tracing
+1. **Simplified Evaluation SDK Integration** — Easily add both built-in Azure AI Foundry evaluators and custom metrics with minimal code
+2. **Pipeline-Based Architecture** — Connect your experiments, inference modules, and data loaders through a configurable pipeline defined in YAML
+
+> **Note:** Pushing evaluation results to Azure AI Foundry dashboard is not currently supported, as the evaluation SDK requires key-based authentication. All evaluations run locally with results saved to JSON files.
 
 
-## 6. Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/vvshankar78/Agentic-Evals.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd Agentic-Evals
-   ```
-3. Set up a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows use `venv\Scripts\activate`
-   ```
+![Evaluation Pipeline](./assets/Eval-pipeline.png)
 
-4. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-5. Log in to Azure using Azure CLI:
-   ```bash
-   az login
-   ```
-6. Run the main pipeline:
-   ```bash
-   python src/main.py
-   ```
-7. Customize the pipeline by modifying the configuration file located in the `config/` folder. Update `config/settings.py` or `config/config.yaml` to adjust parameters such as model settings, data paths, or evaluation criteria as per your requirements. The pipeline steps defined in config.yaml file is shown below. The pipeline can continue from previous step (if already run). For example if data_generation is already run, we can continue by removing data_generation from pipeline in config. 
-   ```bash 
-   pipeline:
-      steps:
-         - data_generation
-         - data_transformation
-         - evaluation
-         - reporting
-   ```
+---
 
+## Folder Structure
 
-
-### Sample Outputs
-
-Once you run the main pipeline, a sample evaluation report is generated and saved as an HTML file. 
-
-You can find the generated evaluation report HTML file attached below:
-```
-src/report/evaluation_report.html
+```text
+Agentic-Evaluations/
+├── src/
+│   ├── agent_evaluation/           # Core evaluation engine
+│   │   └── agentic_ops/            # Runner, client, base evaluator
+│   └── evaluations/
+│       └── offline/
+│           ├── agentic_evaluation/          # Agentic metrics (tool call accuracy, recall@k)
+│           ├── ai_judge_evaluation_custom/  # LLM-as-Judge with prompty templates
+│           ├── genai_evaluation_foundry/    # Built-in RAG evaluators (Relevance, Coherence)
+│           ├── pipeline_experiment_evaluation/ # Full pipeline (data → inference → eval)
+│           └── utils/                       # Shared constants and utilities
+├── assets/                         # Architecture diagrams
+├── .env.template                   # Environment variable template
+├── pyproject.toml                  # Python dependencies (uv)
+└── README.md
 ```
 
-This report provides detailed insights into the evaluation results, including:
+Each evaluation folder follows the same layout: `datasets/` for input data, `evaluator/` for evaluation logic, `report/` for output, and an `experiment.yaml` for configuration.
 
-- **Agent Responses**: Comparison of predicted responses with ground truth.
-- **Function Calls**: Analysis of function call accuracy and relevance.
-- **Agent Communication**: Visualization of agent interactions and message flows.
-- **Evaluation Metrics**: Scores and metrics for each evaluation criterion.
+---
 
-Open the `evaluation_report.html` file in your browser to analyze and share the results with stakeholders.
+## Table of Contents
 
-### Report Screenshots
+- [Folder Structure](#folder-structure)
+- [Getting Started](#getting-started)
+- [Samples](#samples)
+- [Configuration Guide](#configuration-guide)
+- [Creating New Evaluations](#creating-new-evaluations)
+- [Evaluators Reference](#evaluators-reference)
+- [Pipeline Architecture](#pipeline-architecture)
+- [References](#references)
 
-Below are the screenshots of the sample evaluation report generated by the pipeline:
+---
 
-#### Screenshot 1: Overview of Evaluation Metrics
-![Evaluation Metrics Overview](assets/Report-screenshots1.png)
+## Getting Started
+
+### Prerequisites
+
+- Python 3.11+ and Git
+- Azure CLI installed and authenticated
+- Azure AI Foundry project with GPT-4o deployment
+
+### Quick Start
+
+```bash
+# 1. Clone and install
+git clone https://github.com/Azure-Samples/Agentic-Evaluations.git
+cd Agentic-Evaluations
+uv sync
+.venv\Scripts\activate  # Windows PowerShell
+# source .venv/bin/activate  # Linux/macOS
+
+# 2. Azure login
+az login
+az account set --subscription "<your-subscription-id>"
+
+# 3. Configure environment
+cp .env.template .env
+# Edit .env with your Azure AI Foundry credentials:
+#   EVAL_AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com/
+#   EVAL_AZURE_OPENAI_MODEL=<your-deployment-name>
+#   EVAL_AZURE_OPENAI_VERSION=2024-12-01-preview
+
+# 4. Run a sample evaluation
+python -m src.agent_evaluation.agentic_ops.runner --config_file src/evaluations/offline/genai_evaluation_foundry/experiment.yaml
+```
+
+**Results:** `src/evaluations/offline/<experiment_folder>/report/`
+
+---
+
+## Samples
+
+### [`rag_evaluation_foundry`](./src/evaluations/offline/genai_evaluation_foundry/README.md)
+**Standard GenAI/RAG** — Built-in evaluators (Relevance, Coherence, Fluency)
+```bash
+python -m src.agent_evaluation.agentic_ops.runner --config_file src/evaluations/offline/rag_evaluation_foundry/experiment.yaml
+```
+
+### [`agentic_evaluation`](./src/evaluations/offline/agentic_evaluation/README.md)
+**Agentic Systems** — Agent invocation accuracy, recall@k, hallucination detection
+```bash
+python -m src.agent_evaluation.agentic_ops.runner --config_file src/evaluations/offline/agentic_evaluation/experiment.yaml
+```
+
+### [`ai_judge_evaluation_custom`](./src/evaluations/offline/ai_judge_evaluation_custom/README.md)
+**Custom AI Judge** — LLM-as-Judge with prompty templates
+```bash
+python -m src.agent_evaluation.agentic_ops.runner --config_file src/evaluations/offline/ai_judge_evaluation_custom/experiment.yaml
+```
+
+### [`pipeline_experiment_evaluation`](./src/evaluations/offline/pipeline_experiment_evaluation/README.md)
+**Full Pipeline** — Data loading → Inference → Evaluation
+```bash
+python -m src.agent_evaluation.agentic_ops.runner --config_file src/evaluations/offline/pipeline_experiment_evaluation/experiment.yaml
+```
+
+---
+
+## Configuration Guide
+
+### experiment.yaml Structure
+
+```yaml
+app_name: Agentic-Evals
+experiment_name: My_Evaluation
+
+evaluation:
+  run_local: True                    # Local execution (recommended)
+  input_path: datasets/
+  input_file: my_data.jsonl
+  output_path: report/
+  
+  evaluators:                        # Evaluators to run
+    relevance: "relevance_evaluator"
+    coherence: "coherence_evaluator"
+  
+  evaluator_config:                  # Map dataset fields to evaluator inputs
+    relevance:
+      column_mapping:
+        query: "${data.query}"
+        response: "${data.response}"
+
+pipeline:                            # Pipeline stages
+  - base_path: evaluator
+    module: eval_main.eval_main
+    config_key: evaluation
+```
+
+**Key Points:**
+- `${data.<field>}` syntax maps JSONL dataset fields to evaluator parameters
+- Evaluator keys become column names in results
+- See [Built-in Evaluators](#built-in-evaluators-azure-ai-foundry) for parameter requirements
+
+---
+
+## Creating New Evaluations
+
+### 1. Copy a sample and prepare your dataset
+
+```bash
+cp -r src/evaluations/offline/genai_evaluation_foundry src/evaluations/offline/my_evaluation
+```
+
+Create a JSONL file in `datasets/`:
+```jsonl
+{"query": "What is the weather?", "response": "It's sunny and 72°F.", "context": "Weather data..."}
+```
+
+### 2. Register evaluators in `eval_factory.py`
+
+```python
+from azure.ai.evaluation import RelevanceEvaluator, CoherenceEvaluator
+
+class EvaluatorFactory:
+    EVALUATOR_FACTORIES = {
+        "relevance_evaluator": RelevanceEvaluator,
+        "coherence_evaluator": CoherenceEvaluator,
+    }
+```
+
+### 3. Configure and run
+
+Update `experiment.yaml` with your evaluators and column mappings, then:
+
+```bash
+python -m src.agent_evaluation.agentic_ops.runner --config_file src/evaluations/offline/my_evaluation/experiment.yaml
+```
+
+### Adding Custom Evaluators
+
+```python
+# evaluator/evaluator_repo/my_evaluator.py
+class MyCustomEvaluator:
+    def __call__(self, query, response, **kwargs):
+        score = self.calculate_score(query, response)
+        return {"my_metric": score}
+```
+
+Register in `eval_factory.py` and add to your `experiment.yaml`.
+
+---
+
+## Evaluators Reference
 
 
-#### Screenshot 2: Agent Communication Visualization
-![Agent Communication Visualization](assets/Reports-screenshot2.png)
+For AI Foundry's evaluators for Agentic and RAG see the official documentation:
 
-#### Screenshot 3: Function Call Analysis
-![Function Call Analysis](assets/Reports-screenshot3.png)
+📖 [Azure AI Foundry Evaluator Reference](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/evaluate-sdk)
 
+---
 
-## Future Developments
-- Add multi agent sample to the data generator. 
-- Add multi agent evaluation approches - multi turn, multi agent group chat, planner etc.,
-- upgrade html template to provide accomodate additional eval metrics for agentic systems. 
-- Explore other dashboarding tools like PowerBI that can be integrated with 
+## Pipeline Architecture
 
-## Links
-AI Foundry: https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-ai-foundry#work-in-an-azure-ai-foundry-project
+The framework supports flexible pipeline configurations. Choose the pattern that fits your workflow:
+
+### Pipeline 1: Evaluation Only
+Use when you already have model responses and want to evaluate them.
+
+```mermaid
+flowchart LR
+    A[📄 JSONL Dataset] --> B[⚙️ Evaluation Module]
+    B --> C[📊 Results JSON]
+```
+
+### Pipeline 2: Inference + Evaluation
+Use for end-to-end testing with your agent or model.
+
+```mermaid
+flowchart LR
+    A[📝 Input Queries] --> B[🤖 Inference Module]
+    B --> C[⚙️ Evaluation Module]
+    C --> D[📊 Results JSON]
+```
+
+### Pipeline 3: Full Pipeline (Data Loading + Inference + Evaluation)
+Use for production workflows with external data sources.
+
+```mermaid
+flowchart LR
+    A[☁️ Azure Blob] --> B[📥 Data Loader]
+    B --> C[🔄 Preprocessor]
+    C --> D[🤖 Inference]
+    D --> E[⚙️ Evaluation]
+    E --> F[📊 Results]
+```
+
+### Pipeline Configuration in YAML
+
+```yaml
+pipeline:
+  - base_path: data_loader      # Stage 1: Load data
+    module: loader.load_data
+    config_key: data_config
+
+  - base_path: inference        # Stage 2: Run inference
+    module: agent.run_inference
+    config_key: inference_config
+
+  - base_path: evaluator        # Stage 3: Evaluate results
+    module: eval_main.eval_main
+    config_key: evaluation
+```
+
+Each pipeline stage is independently configurable—add, remove, or reorder stages as needed.
+
+---
+
+---
+
+## References
+
+- [Azure AI Evaluation SDK](https://learn.microsoft.com/en-us/python/api/overview/azure/ai-evaluation-readme?view=azure-python)
+- [Azure AI Foundry Documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/what-is-ai-foundry)
+- [Agentic Evaluation Guide](https://learn.microsoft.com/en-us/azure/ai-foundry/how-to/develop/agent-evaluate-sdk)
+
+---
+
+## Cost Considerations
+
+> **Important:** Running evaluations with Azure OpenAI models incurs costs based on token usage. The LLM-as-Judge evaluators call the model for each row in your dataset, so larger datasets will result in higher costs. Monitor your Azure subscription spending regularly and set up [Azure Cost Management](https://learn.microsoft.com/en-us/azure/cost-management-billing/) alerts. See [Azure OpenAI pricing](https://azure.microsoft.com/pricing/details/cognitive-services/openai-service/) for details.
+
+## Clean Up Resources
+
+When you are done experimenting, delete any Azure resources you created to avoid unnecessary charges:
+
+```bash
+az group delete --name <your-resource-group> --yes --no-wait
+```
+
+## Data Provenance
+
+All sample datasets included in this repository are **fully synthetic**. They use fictional entities (Northwind Health, Contoso) and simulated agent interactions (smart-home device controls, weather lookups). No real customer data, personally identifiable information, or production telemetry is included in any dataset.
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+## Contributing
+
+This project welcomes contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
